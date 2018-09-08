@@ -12,9 +12,13 @@ Windows 7+
 # Usage
 
 For an end user, there are three files of interest
+
     1. GetStockQuotes.bat
+    
     2. PatsStocks.jar
+    
     3. stocks.xlsx
+    
     
 Simply download these three files to a common directory on your machine. Open stocks.xlsx, add your stock symbols of interest in the A column, beginning in cell A1. Do not leave any empty cells between stock symbols. Close stocks.xlsx. Double click GetStockQuotes.bat. This will open a windows command terminal, executing the runnable jar file. Once the program is complete, hit any key to close the window. Open stocks.xlsx and your stock prices will be listed.
 
