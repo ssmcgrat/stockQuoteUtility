@@ -24,6 +24,6 @@ Simply download these three files to a common directory on your machine. Open st
 
 # Notes
 
-It is possible that the third part server we query to retrieve quotes has issues. In the console output, if your see any errors related to servers (i.e. 503) try running the program again, this is most likely a network issue.
+It is possible that the third party server we query to retrieve quotes has issues. In the console output, if your see any errors related to servers (i.e. 503) try running the program again, this is most likely a network issue.
 
-Should something unexpected go wrong, stocks.xlsx could become corrupted. We recommend copy/pasting the results in stocks.xlsx into another excel file that you use to keep track of your portfolio information.
+Should something unexpected go wrong, stocks.xlsx could become corrupted. We recommend copy/pasting the results in <i>stocks.xlsx</i> into another excel file that you use to keep track of your portfolio information.
