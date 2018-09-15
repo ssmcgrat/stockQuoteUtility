@@ -73,7 +73,16 @@ public class Main {
 
 	}
 
-	// HTTP GET request
+	/**
+	 * This method gets the current stock price from a free api,
+	 * no longer using this method because it is limited to 
+	 * NYSE, no foreign exchanges or mutual funds. Leaving code here
+	 * for reference.  (9/15/2018)
+	 * 
+	 * @param stock
+	 * @return
+	 * @throws Exception
+	 */
 	private static String sendGet(String stock) throws Exception {
 
 		String url = "https://api.iextrading.com/1.0/stock/" + stock + "/price";
@@ -103,6 +112,13 @@ public class Main {
 
 	}
 
+	/**
+	 * This gets price from nasdaq.com. Only good for mutual funds.
+	 * 
+	 * @param stock
+	 * @return
+	 * @throws IOException
+	 */
 	private static String getFromNasdaq(String stock) throws IOException {
 		URL url;
 		InputStream is = null;
@@ -136,6 +152,13 @@ public class Main {
 		}
 	}
 
+	/**
+	 * Scrapes yahoo for current price. Most effective option I've found.
+	 * 
+	 * @param stock
+	 * @return
+	 * @throws IOException
+	 */
 	private static String getFromYahoo(String stock) throws IOException {
 		URL url;
 		InputStream is = null;
@@ -148,7 +171,6 @@ public class Main {
 			urlStr = urlStr.replaceAll("<stock>", stock);
 			url = new URL(urlStr);
 			is = url.openStream();  // throws an IOException
-			//System.out.println("opened Stream: " + urlStr);
 			br = new BufferedReader(new InputStreamReader(is));
 
 			while ((line = br.readLine()) != null) {
@@ -164,6 +186,8 @@ public class Main {
 
 			// Some symbols do not have a currentPrice listed in the html source,
 			// if this is the case, we try searching for regularMarketPrice as the key.
+			// This is likely to cause issues in future, but for now only necessary with one stock,
+			// and seems to work. (9/15/2018)
 			try {
 				Double.parseDouble(price);
 			} catch (Exception ex) {
@@ -196,9 +220,6 @@ public class Main {
 		//Create an object of FileInputStream class to read excel file
 		FileInputStream inStream = new FileInputStream(file);
 		Workbook workbook = new XSSFWorkbook(inStream);
-
-
-
 
 		//Read sheet inside the workbook by its name
 
