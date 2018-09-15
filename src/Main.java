@@ -22,6 +22,7 @@ import yahoofinance.YahooFinance;
 public class Main {
 
 	private static final String USER_AGENT = "Mozilla/5.0";
+	private static ArrayList<String> errorList = new ArrayList<String>();
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("<--- LET'S BUY SOME FUCKIN' STOCKS MAAAAAAAAN!!!! --->\n\n");
@@ -40,38 +41,33 @@ public class Main {
 		for (String stock : stocks) {
 			prices.add(getStockPrice(stock));
 		}		
-		
+
 		writePricesToExcel(prices);
+		
+		if (!errorList.isEmpty()) {
+			System.err.println("Errors occurred, not able to process following stocks:");
+			for (String s : errorList) {
+				System.err.println("    " + s);
+			}
+		}
+		
 		System.out.println("All done. I hope it's a fortune, Clark.");
 	}
 
 	private static String getStockPrice(String stock) throws Exception {
-		/*try{
-			return sendGet(stock).trim();			
-		} catch (Exception e) {
-			try {
-				System.out.println("need to get from nasdaq");
-				String result = getFromNasdaq(stock);
-				System.out.println(result);
-				if (result.equals("nbsp;")) {
-					result = getFromYahoo(stock);
-				}
-				return result;
-			} catch (Exception e1) {
-				System.out.println("need to get from OTC");
-				return getFromYahoo(stock);
-			}
-		}*/
-		//return getFromYahoo(stock.toUpperCase());
 		String strPrice = getFromYahoo(stock);
-		Double price;
+		Double price = null;
 		try {
 			price = Double.parseDouble(strPrice);
 		} catch (Exception e) {
-			strPrice = getFromNasdaq(stock);
-			price = Double.parseDouble(strPrice); 
+			try {
+				strPrice = getFromNasdaq(stock);
+				price = Double.parseDouble(strPrice);
+			} catch (Exception e1) {
+				errorList.add(stock);
+			}
 		}
-		
+
 		System.out.println(stock + ": " + price);
 		return strPrice;
 
@@ -109,88 +105,86 @@ public class Main {
 
 	private static String getFromNasdaq(String stock) throws IOException {
 		URL url;
-	    InputStream is = null;
-	    BufferedReader br;
-	    String line;
-	    StringBuffer sb = new StringBuffer();
+		InputStream is = null;
+		BufferedReader br;
+		String line;
+		StringBuffer sb = new StringBuffer();
 
-	    try {
-	        url = new URL("https://www.nasdaq.com/symbol/" + stock);
-	        is = url.openStream();  // throws an IOException
-	        br = new BufferedReader(new InputStreamReader(is));
+		try {
+			url = new URL("https://www.nasdaq.com/symbol/" + stock);
+			is = url.openStream();  // throws an IOException
+			br = new BufferedReader(new InputStreamReader(is));
 
-	        while ((line = br.readLine()) != null) {
-	            sb.append(line);
-	        }
-	        
-	        int index = sb.indexOf("<b>Last Net Asset Value (NAV)</b>");
-	        int startIndex = sb.indexOf("<td>", index) + 5;
-	        String price = sb.substring(startIndex, startIndex + 5);
-	        
-	        return price;
-	    } catch (Exception e) {
-	    	System.err.println(e.getMessage());
-	    	return "";
-	    } finally {
-	        try {
-	            if (is != null) is.close();
-	        } catch (IOException ioe) {
-	            // nothing to see here
-	        }
-	    }
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
+			}
+
+			int index = sb.indexOf("<b>Last Net Asset Value (NAV)</b>");
+			int startIndex = sb.indexOf("<td>", index) + 5;
+			String price = sb.substring(startIndex, startIndex + 5);
+
+			return price;
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			return "";
+		} finally {
+			try {
+				if (is != null) is.close();
+			} catch (IOException ioe) {
+				// nothing to see here
+			}
+		}
 	}
-	
+
 	private static String getFromYahoo(String stock) throws IOException {
 		URL url;
-	    InputStream is = null;
-	    BufferedReader br;
-	    String line;
-	    StringBuffer sb = new StringBuffer();
+		InputStream is = null;
+		BufferedReader br;
+		String line;
+		StringBuffer sb = new StringBuffer();
 
-	    try {
-	    	String urlStr = "https://finance.yahoo.com/quote/<stock>?p=<stock>";
-	    	urlStr = urlStr.replaceAll("<stock>", stock);
-	        url = new URL(urlStr);
-	        is = url.openStream();  // throws an IOException
-	        //System.out.println("opened Stream: " + urlStr);
-	        br = new BufferedReader(new InputStreamReader(is));
+		try {
+			String urlStr = "https://finance.yahoo.com/quote/<stock>?p=<stock>";
+			urlStr = urlStr.replaceAll("<stock>", stock);
+			url = new URL(urlStr);
+			is = url.openStream();  // throws an IOException
+			//System.out.println("opened Stream: " + urlStr);
+			br = new BufferedReader(new InputStreamReader(is));
 
-	        while ((line = br.readLine()) != null) {
-	            sb.append(line);
-	            //System.out.println(line);
-	        }
-	        
-	        /*String key = "Previous Close</span>";
-	        int index = sb.indexOf(key);
-	        System.out.println("index: " + index);
-	        int endIndex = sb.indexOf("</span></td></tr>", index);
-	        System.out.println("endIndex: " + endIndex);
-	        int startIndex = 0;
-	        for (int i = endIndex - 1; i>0; i--) {
-	        	if (sb.charAt(i) == '>') {
-	        		startIndex = i + 1;
-	        		break;
-	        	}
-	        }*/
-	        
-	        String key = "currentPrice\":{\"raw\":";
-	        int index = sb.indexOf(key);
-	        int endIndex = sb.indexOf(",", index);
-	        int startIndex = index + key.length();
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
+			}
 
-	        String price = sb.substring(startIndex, endIndex);
-	        
-	        return price;
-	    } catch (Exception e) {
-	    	System.err.println(e.getMessage());
-	    	return "";
-	    } finally {
-	        try {
-	            if (is != null) is.close();
-	        } catch (IOException ioe) {
-	            // nothing to see here
-	        }
-	    }
+			String key = "currentPrice\":{\"raw\":";
+			int index = sb.indexOf(key);
+			int endIndex = sb.indexOf(",", index);
+			int startIndex = index + key.length();
+
+			String price = sb.substring(startIndex, endIndex);
+
+			// Some symbols do not have a currentPrice listed in the html source,
+			// if this is the case, we try searching for regularMarketPrice as the key.
+			try {
+				Double.parseDouble(price);
+			} catch (Exception ex) {
+				key = "\"regularMarketPrice\":{\"raw\":";
+				index = sb.indexOf(key);
+				endIndex = sb.indexOf(",", index);
+				startIndex = index + key.length();
+				price = sb.substring(startIndex, endIndex);
+			}
+
+			return price;
+		} catch (Exception e) {
+			System.err.println(e.getMessage());
+			return "";
+		} finally {
+			try {
+				if (is != null) is.close();
+			} catch (IOException ioe) {
+				// nothing to see here
+			}
+		}
 	}
 
 	private static ArrayList<String> readStocksFromExcel() throws Exception {
